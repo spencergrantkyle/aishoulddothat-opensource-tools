@@ -11,7 +11,8 @@
     "path": "screenshot-tool",
     "licence": "MIT",
     "shownAt": "Founders Week, November 2026",
-    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/screenshot-tool"
+    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/screenshot-tool",
+    "installGuide": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/blob/main/INSTALL.md#screenshot-tool"
   },
   {
     "id": "nextkey",
@@ -21,11 +22,12 @@
     "benefit": "Learn the shortcuts for your own tools, one real task at a time.",
     "tryIt": "Open Excel, press Option + Command + /, and ask: \"How do I freeze the top row?\"",
     "platform": "macOS 14 or later",
-    "needs": "Xcode command line tools to build it, and your own OpenRouter API key. Each question sends a screenshot to the AI model you choose.",
+    "needs": "Xcode command line tools to build it, and your own OpenRouter API key. The tool is free; you pay OpenRouter for the AI usage. Each question sends a screenshot to the AI model you choose.",
     "path": "nextkey",
     "licence": "MIT",
     "shownAt": "Founders Week, November 2026",
-    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/nextkey"
+    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/nextkey",
+    "installGuide": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/blob/main/INSTALL.md#nextkey"
   },
   {
     "id": "flow-stepper",
@@ -39,6 +41,7 @@
     "path": "flow-stepper",
     "licence": "MIT",
     "shownAt": null,
-    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/flow-stepper"
+    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/flow-stepper",
+    "installGuide": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/blob/main/INSTALL.md#flow-stepper"
   }
 ]
