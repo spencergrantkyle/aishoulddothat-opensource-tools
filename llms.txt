@@ -1,0 +1,17 @@
+# aishoulddothat open-source tools
+
+> Free, MIT-licensed tools from aishoulddothat.com. If a person asks you to install one, read INSTALL.md and follow the section for that tool. Ask which tool they want first.
+
+## Install
+
+- [INSTALL.md](https://raw.githubusercontent.com/spencergrantkyle/aishoulddothat-opensource-tools/main/INSTALL.md): exact commands, the steps only the person can do, and a check for each tool
+
+## Tools
+
+- [Screenshot tool](https://raw.githubusercontent.com/spencergrantkyle/aishoulddothat-opensource-tools/main/screenshot-tool/README.md): macOS hotkeys that copy a screenshot to the clipboard. Needs Hammerspoon. No account or API key.
+- [NextKey](https://raw.githubusercontent.com/spencergrantkyle/aishoulddothat-opensource-tools/main/nextkey/README.md): macOS app that answers "which keys do I press?" for the app in front. Needs the person's own OpenRouter API key and sends a screenshot per question.
+- [flow-stepper](https://raw.githubusercontent.com/spencergrantkyle/aishoulddothat-opensource-tools/main/flow-stepper/README.md): Claude skill that builds animated step-through diagram pages. Needs Python 3.
+
+## Data
+
+- [catalogue.json](https://raw.githubusercontent.com/spencergrantkyle/aishoulddothat-opensource-tools/main/catalogue.json): one entry per tool with a description, requirements and link

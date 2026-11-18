@@ -9,6 +9,20 @@ Everything here is under the [MIT licence](LICENSE).
 | [nextkey](nextkey/) | Press a hotkey, say what you want to do, and get the keyboard shortcut for the app you are in. | macOS 14 or later |
 | [flow-stepper](flow-stepper/) | A Claude skill that turns a process description into an animated, step-through diagram page. | Claude Code or claude.ai, with Python 3 |
 
+## Install with your AI assistant
+
+Paste this into Claude Code, Codex, Claude or ChatGPT:
+
+```text
+Read https://raw.githubusercontent.com/spencergrantkyle/aishoulddothat-opensource-tools/main/INSTALL.md and help me install one of the tools. Ask me which one first.
+```
+
+An assistant that can run commands on your machine (Claude Code, Codex) does the install for
+you. One that can only chat walks you through it. [INSTALL.md](INSTALL.md) also works fine
+read by a person.
+
+## Install by hand
+
 Each folder has its own README with install steps. To get everything, use **Code → Download
 ZIP** above, or:
 
