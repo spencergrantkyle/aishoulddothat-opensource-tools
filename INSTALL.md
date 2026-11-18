@@ -41,7 +41,7 @@ No account and no API key.
 1. Install Hammerspoon if it is missing. With Homebrew:
 
    ```bash
-   ls /Applications/Hammerspoon.app >/dev/null 2>&1 || brew install --cask hammerspoon
+   ls /Applications/Hammerspoon.app >/dev/null 2>&1 || { command -v brew >/dev/null && brew install --cask hammerspoon || echo "No Homebrew: install Hammerspoon from https://www.hammerspoon.org, then continue"; }
    ```
 
    Without Homebrew, download it from https://www.hammerspoon.org and drag it to Applications.
@@ -58,18 +58,15 @@ No account and no API key.
    grep -q 'require("screenshotfolder")' ~/.hammerspoon/init.lua 2>/dev/null || printf '\nscreenshotfolder = require("screenshotfolder")\nscreenshotfolder.start()\n' >> ~/.hammerspoon/init.lua
    ```
 
-4. Start Hammerspoon:
+4. Start Hammerspoon, or restart it if it was already running, so it loads the new config:
 
    ```bash
-   open -a Hammerspoon
+   osascript -e 'quit app "Hammerspoon"'; sleep 1; open -a Hammerspoon
    ```
 
-   If it was already running, the person clicks the Hammerspoon menu bar icon and chooses
-   **Reload Config**.
-
 5. **Person does this:** press Ctrl+Shift+S. macOS asks for permission. Open **System Settings →
-   Privacy & Security → Screen & System Audio Recording**, turn on Hammerspoon, then quit and
-   reopen Hammerspoon.
+   Privacy & Security → Screen & System Audio Recording**, turn on Hammerspoon, then run the
+   step 4 command again.
 
 **Check:** a camera icon (📷) is in the menu bar. Press Ctrl+Shift+S, then paste into any app:
 a screenshot appears.
