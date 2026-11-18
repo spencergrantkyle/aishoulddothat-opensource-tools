@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+/* ---------- tokens (override per figure with spec.tokens) ---------- */
+:root {
+  --ink: #111111; --paper: #ffffff; --bg: #f7f7f5; --muted: #f2f2f2;
+  --edge: #cfcfcf; --quiet: #8a8a8a;
+  --ok: #3fd9b8; --bad: #ff6764; --bad-ink: #a33936;
+  --accent: #7b8cff; --c1: #b69cff; --c2: #ffd166; --c3: #ff9ecf; --c4: #7fd1ff;
+  --sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "Cascadia Mono", "SF Mono", Consolas, ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #f2f2f2; --paper: #121212; --bg: #0b0b0b; --muted: #222; --edge: #555; --quiet: #a0a0a0;
+    --ok: #0aa383; --bad-ink: #ff9a96; --accent: #5b6cf0;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #f2f2f2; --paper: #121212; --bg: #0b0b0b; --muted: #222; --edge: #555; --quiet: #a0a0a0;
+  --ok: #0aa383; --bad-ink: #ff9a96; --accent: #5b6cf0;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); padding: 0 16px; }
+.page-intro { max-width: 68rem; margin: 2.5rem auto 0; }
+.page-intro h1 { font-size: 2rem; letter-spacing: -0.02em; margin: 0 0 .5rem; }
+.page-intro p { color: var(--quiet); max-width: 70ch; line-height: 1.5; margin: 0; }
+
+/* ---------- figure ---------- */
+.fig { max-width: 68rem; margin: 2rem auto; padding: 1.5rem; background: var(--paper); color: var(--ink);
+  border: 1px solid var(--edge); border-radius: 10px; display: flex; flex-direction: column; container-type: inline-size; outline: none; }
+.fig h2 { margin: 0; font-size: 1.75rem; font-weight: 500; letter-spacing: -0.015em; }
+.fig .lede { margin: .35rem 0 0; color: var(--quiet); font-size: .95rem; max-width: 70ch; }
+.fig button { font: inherit; color: inherit; cursor: pointer; }
+.fig button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scroller { overflow-x: auto; margin: 0 -1.5rem; padding: 0 1.5rem; }
+
+/* ---------- stage ---------- */
+.stage { position: relative; isolation: isolate; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 1.25rem; align-items: stretch; padding: 1.25rem 4% 1.5rem; }
+.wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; overflow: visible; }
+.rail { fill: none; stroke: var(--edge); stroke-width: 1.25; stroke-linejoin: round; }
+.flow { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.flow.bad { stroke: var(--bad-ink); }
+.arrow-ink { fill: var(--ink); } .arrow-bad { fill: var(--bad-ink); }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+
+.node { position: relative; border: 1px solid var(--ink); background: var(--paper); border-radius: 4px; padding: .75rem 1rem;
+  display: flex; flex-direction: column; justify-content: center; min-width: 0; min-height: 4.5rem; }
+.node h3 { margin: 0; display: flex; align-items: center; gap: .5rem; font-size: 1rem; font-weight: 600; line-height: 1.25; }
+.node h3 svg { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
+.node .sub { margin: .25rem 0 0 1.75rem; font-size: .875rem; line-height: 1.35; color: var(--ink); }
+.node .meta { margin: .3rem 0 0 1.75rem; font-family: var(--mono); font-size: .8rem; display: grid; min-height: 1.1rem; }
+.node .meta > span { grid-area: 1 / 1; }
+.node[data-planned="true"] { color: var(--quiet); border-style: dashed; border-color: var(--quiet); }
+.node[data-planned="true"] .sub { color: var(--quiet); }
+.node[data-active="true"] { box-shadow: inset 0 0 0 1px var(--ink); }
+.node[data-highlight="true"] { outline: 1px solid color-mix(in srgb, var(--accent) 65%, var(--ink)); outline-offset: 4px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent); }
+.node[data-highlight="true"][data-active="true"] { box-shadow: inset 0 0 0 1px var(--ink), 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent); }
+.node[data-danger="true"] { border-color: var(--bad-ink); box-shadow: inset 0 0 0 1px var(--bad-ink); }
+.node[data-danger="true"][data-highlight="true"] { outline-color: var(--bad-ink); }
+
+/* actor (a person / trigger): circle icon, no box */
+.node.actor { border: 0; background: none; padding: 0; min-height: 0; align-items: center; justify-content: flex-start; gap: .3rem;
+  font-size: .875rem; font-weight: 600; box-shadow: none !important; outline: none !important; }
+.node.actor .disc { width: 2.5rem; height: 2.5rem; border: 1px solid var(--ink); border-radius: 50%; display: grid; place-items: center; background: var(--paper); }
+.node.actor .disc svg { width: 1.3rem; height: 1.3rem; }
+.node.actor[data-active="true"] .disc { box-shadow: inset 0 0 0 1px var(--ink); }
+.node.actor[data-danger="true"] .disc { border-color: var(--bad-ink); box-shadow: inset 0 0 0 1px var(--bad-ink); }
+.node.actor[data-planned="true"] .disc { border-style: dashed; border-color: var(--quiet); }
+
+/* items: a registry inside a node */
+.node ul { list-style: none; padding: 0; margin: .75rem 0 0; display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: .5rem; }
+.node li { display: flex; align-items: center; gap: .4rem; min-width: 0; padding: .25rem .5rem; font-family: var(--mono); font-size: .75rem;
+  border: 1px solid var(--edge); background: var(--muted); border-radius: .25rem; transform-origin: 0 50%; }
+.node li .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.node li i { margin-inline-start: auto; width: .8rem; height: .8rem; flex: 0 0 auto; border-radius: 50%; border: 1px solid var(--ink);
+  display: grid; place-items: center; background: var(--paper); }
+.node li i svg { width: 100%; height: 100%; }
+.node li[data-status="ok"] i { background: var(--ok); }
+.node li[data-status="fail"] { background: color-mix(in srgb, var(--bad) 14%, var(--paper)); border-color: var(--bad-ink); box-shadow: inset 0 0 0 1px var(--bad-ink); }
+.node li[data-status="fail"] i { background: var(--bad); }
+.node li[data-status="pending"] i { background: var(--paper); border-style: dashed; }
+.node li[data-status="focus"] { background: var(--paper); border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.node li[data-status="hidden"] { visibility: hidden; opacity: 0; transform: translateY(3px) scale(.95); }
+
+.marker { display: inline-flex; align-items: center; gap: .4rem; }
+.marker::before { content: ""; width: .55rem; height: .55rem; flex: 0 0 auto; rotate: 45deg; border: 1px solid var(--ink); border-radius: 1px;
+  background: var(--mk, var(--accent)); margin-inline: .1rem; }
+
+.elabel { position: absolute; width: max-content; max-width: min(34%, 11rem); padding: .25rem .5rem; text-align: center;
+  font-size: .75rem; line-height: 1.25; background: var(--paper); border: 1px solid var(--edge); border-radius: .25rem; }
+.elabel small { display: flex; justify-content: center; margin-top: .15rem; font-family: var(--mono); font-size: .72rem; }
+.elabel.bad { color: var(--bad-ink); border-color: currentColor; }
+.elabel[data-side="above"] { translate: -50% calc(-100% - 8px); }
+.elabel[data-side="below"] { translate: -50% 8px; }
+.elabel[data-side="right"] { translate: 8px -50%; }
+.elabel[data-side="left"]  { translate: calc(-100% - 8px) -50%; }
+
+/* ---------- story + nav ---------- */
+.story { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; align-items: start; padding: 1rem 0; border-block: 1px solid var(--edge); }
+.badge { font-family: var(--mono); font-size: .75rem; font-weight: 600; background: var(--muted); border-radius: .25rem; padding: .375rem .5rem; white-space: nowrap; }
+.captions { display: grid; min-width: 0; }
+.slide { grid-area: 1 / 1; }
+.slide[aria-hidden="true"] { opacity: 0; visibility: hidden; pointer-events: none; }
+.slide h3 { margin: 0; font-size: 1.35rem; font-weight: 500; letter-spacing: -0.01em; text-wrap: pretty; }
+.slide p { margin: .35rem 0 0; max-width: 76ch; font-size: 1.02rem; line-height: 1.6; }
+.slide code { font-family: var(--mono); font-size: .92em; }
+.node .sub code, .node .meta { overflow-wrap: anywhere; }
+.nav { display: flex; align-items: center; gap: .75rem; padding-top: .5rem; }
+.counter, .btns button { font-family: var(--mono); font-size: .75rem; font-weight: 600; }
+.ticks { display: flex; flex: 1 1 0; gap: 3px; max-width: 22rem; }
+.ticks button { flex: 1 1 0; min-width: 0; padding: 14px 0; border: 0; background: none; }
+.ticks button::after { content: ""; display: block; height: 4px; border-radius: 2px; background: var(--edge); }
+.ticks button[data-past="true"]::after { background: var(--quiet); }
+.ticks button[aria-current="step"]::after { background: var(--ink); height: 6px; }
+.btns { display: flex; gap: .5rem; margin-inline-start: auto; }
+.btns button { display: inline-flex; align-items: center; gap: .5rem; min-height: 2rem; padding: .25rem .75rem; text-transform: uppercase;
+  border: 1px solid var(--ink); border-radius: .25rem; background: var(--paper); }
+.btns button:last-child { background: var(--ink); color: var(--paper); }
+.btns button:disabled { opacity: .4; cursor: default; }
+.btns svg { width: .9rem; height: .9rem; }
+
+/* ---------- motion (all of it lives here) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .slide { transition: opacity .26s ease-out 90ms, transform .26s ease-out 90ms, visibility; }
+  .slide[aria-hidden="true"] { transition: opacity .11s ease-in, transform .11s ease-in, visibility 0s .11s; transform: translateY(3px); }
+  .node, .node .disc { transition: border-color .23s, box-shadow .23s, color .23s, outline-color .23s; }
+  .node li { transition: opacity .24s, transform .28s, background-color .3s, border-color .3s, visibility; }
+  .node li[data-status="hidden"] { transition: opacity .14s, transform .14s, visibility 0s .14s; }
+  .node li[data-status="fail"] i, .node li[data-status="ok"].pop i { animation: pop .3s ease-out; }
+  .flow.reveal { stroke-dasharray: 1; animation: trace var(--trace, .9s) linear both; }
+  .elabel.reveal, .node .meta > span.arrive { animation: arrive .26s ease-out both; }
+  .elabel.reveal { animation-delay: .25s; }
+  .ticks button::after { transition: background-color .2s, height .2s; }
+}
+@keyframes trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes pop { 0% { transform: scale(.8); } 55% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes arrive { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- narrow ---------- */
+@container (max-width: 38rem) {
+  .fig h2 { font-size: 1.35rem; }
+  .story { grid-template-columns: 1fr; border-bottom: 0; }
+  .badge { display: none; }
+  .slide h3 { font-size: 1.1rem; } .slide p { font-size: .9rem; line-height: 1.45; }
+  .nav { display: grid; grid-template-columns: auto 1fr; gap: .25rem .5rem; }
+  .ticks { grid-column: 1 / -1; max-width: none; }
+  .btns button { min-height: 44px; }
+}
+</style>
+</head>
+<body>
+<!--INTRO-->
+<!--SPECS-->
+<script>
+(() => {
+const NS = "http://www.w3.org/2000/svg";
+const P = d => d.split("|").map(x => `<path d="${x}"/>`).join("");
+const ICONS = {
+  person: '<circle cx="12" cy="8" r="4"/>' + P("M4 21c0-4.2 3.6-6.5 8-6.5s8 2.3 8 6.5"),
+  team: '<circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/>' + P("M2.5 20c0-3.6 3-5.6 6.5-5.6s6.5 2 6.5 5.6|M16 14.6c3 0 5.5 1.6 5.5 4.6"),
+  doc: P("M6 3h8l4 4v14H6z|M14 3v4h4|M9 12h6|M9 16h6"),
+  sheet: '<rect x="4" y="4" width="16" height="16" rx="1"/>' + P("M4 9.5h16|M4 15h16|M10 4v16"),
+  chip: '<rect x="7" y="7" width="10" height="10" rx="1"/>' + P("M9.5 3v4|M14.5 3v4|M9.5 17v4|M14.5 17v4|M3 9.5h4|M3 14.5h4|M17 9.5h4|M17 14.5h4"),
+  db: '<ellipse cx="12" cy="6" rx="7" ry="3"/>' + P("M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6|M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"),
+  gear: '<circle cx="12" cy="12" r="3.2"/>' + P("M12 3v3|M12 18v3|M3 12h3|M18 12h3|M5.6 5.6l2.1 2.1|M16.3 16.3l2.1 2.1|M5.6 18.4l2.1-2.1|M16.3 7.7l2.1-2.1"),
+  cloud: P("M7 18.5h10.5a4 4 0 0 0 .3-8 6 6 0 0 0-11.6 1.6A3.3 3.3 0 0 0 7 18.5z"),
+  shield: P("M12 3l7 3v6c0 4.2-3 7.3-7 9-4-1.7-7-4.8-7-9V6z|M9 12l2 2 4-4"),
+  list: P("M9 6h11|M9 12h11|M9 18h11|M4.5 6h.5|M4.5 12h.5|M4.5 18h.5"),
+  bolt: P("M13 3L5 14h6l-1 7 8-11h-6z"),
+  lock: '<rect x="5" y="11" width="14" height="10" rx="1"/>' + P("M8 11V8a4 4 0 0 1 8 0v3"),
+  chat: P("M4 5h16v11H9l-5 4z"),
+  spark: P("M12 3v5|M12 16v5|M3 12h5|M16 12h5|M6 6l3 3|M15 15l3 3|M6 18l3-3|M15 9l3-3"),
+  play: P("M7 4l13 8-13 8z"),
+  folder: P("M3 6h6l2 2h10v11H3z"),
+  eye: P("M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z") + '<circle cx="12" cy="12" r="2.8"/>',
+  printer: P("M7 9V3h10v6|M5 9h14a2 2 0 0 1 2 2v6h-4|M7 17H3v-6a2 2 0 0 1 2-2|M7 14h10v7H7z"),
+  flag: P("M5 21V4|M5 4h12l-2 4 2 4H5"),
+  warn: P("M12 3L2 20h20z|M12 10v4|M12 17v.5"),
+};
+const svgIcon = (name, cls = "") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.doc}</svg>`;
+const TICK = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3.2 6.2l1.8 1.8 3.8-4"/></svg>';
+const CROSS = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l4 4M8 4l-4 4"/></svg>';
+const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+const ARROW_L = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3M7 4L3 8l4 4"/></svg>';
+const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// inline formatting for captions: `code` and **bold** only
+const fmt = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+const clone = o => JSON.parse(JSON.stringify(o));
+const H = s => s === "left" || s === "right";
+
+document.querySelectorAll("script.flow-spec").forEach(s => mount(JSON.parse(s.textContent), s));
+
+function mount(spec, anchor) {
+  const fig = document.createElement("figure");
+  fig.className = "fig"; fig.tabIndex = -1;
+  for (const [k, v] of Object.entries(spec.tokens || {})) fig.style.setProperty("--" + k, v);
+  anchor.after(fig);
+  const L = spec.layout || {};
+  fig.innerHTML = `
+    ${spec.title ? `<h2>${esc(spec.title)}</h2>` : ""}
+    ${spec.lede ? `<p class="lede">${fmt(spec.lede)}</p>` : ""}
+    <div class="scroller"><div class="stage" style="grid-template-rows:${esc(L.rows || "auto 2.75rem auto 5rem auto")};min-width:${esc(L.minWidth || "46rem")}">
+      <svg class="wires"><defs>
+        <marker id="${spec.id}-ai" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow-ink" d="M0 1L9 5L0 9z"/></marker>
+        <marker id="${spec.id}-ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow-bad" d="M0 1L9 5L0 9z"/></marker>
+      </defs><g class="rails"></g><g class="flows"></g></svg>
+      <div class="labels"></div>
+    </div></div>
+    <div class="story"><span class="badge"></span><div class="captions"></div></div>
+    <nav class="nav" aria-label="Steps"><span class="counter"></span><div class="ticks"></div>
+      <div class="btns"><button type="button" class="back">${ARROW_L} Back</button><button type="button" class="next">Next ${ARROW}</button></div></nav>`;
+  const stage = fig.querySelector(".stage"), svg = fig.querySelector(".wires");
+  const railG = svg.querySelector(".rails"), flowG = svg.querySelector(".flows"), labels = fig.querySelector(".labels");
+  const nodes = {};
+
+  for (const n of spec.nodes) {
+    const d = document.createElement("div");
+    d.className = "node " + (n.kind === "actor" ? "actor" : "box");
+    d.dataset.id = n.id;
+    d.style.gridArea = n.area;
+    if (n.cols) d.style.setProperty("--cols", n.cols);
+    if (n.kind === "actor") {
+      d.innerHTML = `<span>${esc(n.title)}</span><span class="disc anchor">${svgIcon(n.icon || "person")}</span>`;
+    } else {
+      d.innerHTML = `<h3>${n.icon ? svgIcon(n.icon) : ""}${esc(n.title)}</h3>${n.sub ? `<p class="sub">${fmt(n.sub)}</p>` : ""}` +
+        (n.meta !== undefined ? `<code class="meta"><span></span></code>` : "") +
+        (n.items ? `<ul>${n.items.map(it => `<li data-item="${esc(it.id)}"${it.color ? ` style="--mk:${esc(it.color)}"` : ""}><span class="lbl ${it.color ? "marker" : ""}">${esc(it.label)}</span><i></i></li>`).join("")}</ul>` : "");
+    }
+    stage.appendChild(d);
+    nodes[n.id] = d;
+  }
+
+  // fold step deltas into a full state per step, so Back / jump are exact
+  const base = {};
+  for (const n of spec.nodes) base[n.id] = {
+    planned: !!n.planned, danger: false, highlight: !!n.highlight, meta: n.meta ?? null,
+    items: Object.fromEntries((n.items || []).map(it => [it.id, it.status || "ok"])),
+  };
+  const states = []; let cur = base;
+  for (const st of spec.steps) {
+    cur = clone(cur);
+    for (const [id, patch] of Object.entries(st.set || {})) {
+      const { items, ...rest } = patch;
+      Object.assign(cur[id], rest);
+      if (items) Object.assign(cur[id].items, items);
+    }
+    states.push(cur);
+  }
+
+  const caps = fig.querySelector(".captions"), ticks = fig.querySelector(".ticks");
+  spec.steps.forEach((st, i) => {
+    caps.insertAdjacentHTML("beforeend", `<div class="slide" aria-hidden="true"><h3>${fmt(st.title)}</h3>${st.body ? `<p>${fmt(st.body)}</p>` : ""}</div>`);
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("aria-label", `Step ${i + 1}: ${st.title}`);
+    b.onclick = () => go(i);
+    ticks.appendChild(b);
+  });
+  const slides = [...caps.children], tickBtns = [...ticks.children];
+  const back = fig.querySelector(".back"), next = fig.querySelector(".next");
+  const pad = n => String(n).padStart(2, "0");
+
+  // ---------- geometry ----------
+  const edgeById = Object.fromEntries((spec.edges || []).map(e => [e.id, e]));
+  function anchorPt(id, side, at = 0.5, gap = 0) {
+    const n = nodes[id], t = n.querySelector(".anchor") || n;
+    const r = t.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    const x = r.left - s.left, y = r.top - s.top;
+    switch (side) {
+      case "top": return { x: x + r.width * at, y: y - gap };
+      case "bottom": return { x: x + r.width * at, y: y + r.height + gap };
+      case "left": return { x: x - gap, y: y + r.height * at };
+      default: return { x: x + r.width + gap, y: y + r.height * at };
+    }
+  }
+  function route(e, gapA = 0, gapB = 0) {
+    const a = anchorPt(e.from, e.fromSide, e.fromAt, gapA), b = anchorPt(e.to, e.toSide, e.toAt, gapB);
+    let pts;
+    if (H(e.fromSide) && H(e.toSide)) {
+      if (Math.abs(a.y - b.y) < 1) { b.y = a.y; pts = [a, b]; }
+      else { const mx = e.mid ?? (a.x + b.x) / 2; pts = [a, { x: mx, y: a.y }, { x: mx, y: b.y }, b]; }
+    } else if (!H(e.fromSide) && !H(e.toSide)) {
+      if (Math.abs(a.x - b.x) < 1) { b.x = a.x; pts = [a, b]; }
+      else { const my = e.mid ?? (a.y + b.y) / 2; pts = [a, { x: a.x, y: my }, { x: b.x, y: my }, b]; }
+    } else if (H(e.fromSide)) pts = [a, { x: b.x, y: a.y }, b];
+    else pts = [a, { x: a.x, y: b.y }, b];
+    return pts;
+  }
+  function pathD(pts, r = 10) {
+    pts = pts.filter((p, i) => i === 0 || Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y) > 0.5);
+    let d = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1];
+      const d1 = Math.hypot(p1.x - p0.x, p1.y - p0.y), d2 = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      const rr = Math.min(r, d1 / 2, d2 / 2);
+      d += ` L${p1.x + (p0.x - p1.x) / d1 * rr},${p1.y + (p0.y - p1.y) / d1 * rr} Q${p1.x},${p1.y} ${p1.x + (p2.x - p1.x) / d2 * rr},${p1.y + (p2.y - p1.y) / d2 * rr}`;
+    }
+    const z = pts[pts.length - 1];
+    return d + ` L${z.x},${z.y}`;
+  }
+  function labelSpot(pts, side) {
+    let best = 0, bl = -1;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const l = Math.hypot(pts[i + 1].x - pts[i].x, pts[i + 1].y - pts[i].y);
+      if (l > bl) { bl = l; best = i; }
+    }
+    const p = pts[best], q = pts[best + 1];
+    const horiz = Math.abs(q.y - p.y) < 1;
+    return { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2, side: side || (horiz ? "above" : "right") };
+  }
+
+  let idx = 0;
+  function drawWires(animate) {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    railG.innerHTML = ""; flowG.innerHTML = ""; labels.innerHTML = "";
+    for (const e of spec.edges || []) {
+      if (e.rail === false) continue;
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("class", "rail"); p.setAttribute("d", pathD(route(e)));
+      railG.appendChild(p);
+    }
+    for (const f of spec.steps[idx].flows || []) {
+      const e = edgeById[f.edge];
+      let pts = f.reverse ? route(e, 6, 0).reverse() : route(e, 0, 6);
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("class", "flow" + (f.danger ? " bad" : ""));
+      p.setAttribute("d", pathD(pts));
+      p.setAttribute("pathLength", "1");
+      const mk = `url(#${spec.id}-${f.danger ? "ab" : "ai"})`;
+      if (animate && !reduce.matches) {
+        p.classList.add("reveal");
+        p.addEventListener("animationend", () => p.setAttribute("marker-end", mk), { once: true });
+      } else p.setAttribute("marker-end", mk);
+      flowG.appendChild(p);
+      if (f.label || f.sub) {
+        const s = labelSpot(pts, f.side);
+        const lab = document.createElement("div");
+        lab.className = "elabel" + (f.danger ? " bad" : "") + (animate && !reduce.matches ? " reveal" : "");
+        lab.dataset.side = s.side;
+        lab.style.left = s.x + "px"; lab.style.top = s.y + "px";
+        lab.innerHTML = (f.label ? fmt(f.label) : "") + (f.sub ? `<small><span class="${f.marker === false ? "" : "marker"}">${esc(f.sub)}</span></small>` : "");
+        labels.appendChild(lab);
+      }
+    }
+  }
+
+  function render(animate) {
+    const st = spec.steps[idx], S = states[idx], prev = animate && idx > 0 ? states[idx - 1] : null;
+    for (const [id, d] of Object.entries(nodes)) {
+      const s = S[id];
+      d.dataset.planned = s.planned; d.dataset.danger = s.danger; d.dataset.highlight = s.highlight;
+      d.dataset.active = (st.active || []).includes(id);
+      const meta = d.querySelector(".meta");
+      if (meta) {
+        const span = meta.firstElementChild, txt = s.meta ?? "";
+        if (span.textContent !== txt) {
+          const n = document.createElement("span");
+          n.textContent = txt;
+          if (s.metaMarker) { n.className = "marker"; n.style.setProperty("--mk", s.metaMarker); }
+          if (animate) n.classList.add("arrive");
+          meta.replaceChildren(n);
+        }
+      }
+      for (const li of d.querySelectorAll("li")) {
+        const v = s.items[li.dataset.item];
+        const was = li.dataset.status;
+        li.dataset.status = v;
+        li.setAttribute("aria-hidden", v === "hidden");
+        li.querySelector("i").innerHTML = v === "fail" ? CROSS : v === "ok" ? TICK : "";
+        li.classList.toggle("pop", !!(animate && was && was !== "ok" && v === "ok"));
+      }
+    }
+    slides.forEach((sl, i) => sl.setAttribute("aria-hidden", i !== idx));
+    tickBtns.forEach((b, i) => { b.dataset.past = i < idx; if (i === idx) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
+    fig.querySelector(".badge").textContent = `STEP ${idx + 1}`;
+    fig.querySelector(".counter").textContent = `${pad(idx + 1)} / ${pad(spec.steps.length)}`;
+    back.disabled = idx === 0;
+    next.innerHTML = idx === spec.steps.length - 1 ? "Replay" : `Next ${ARROW}`;
+    drawWires(animate);
+  }
+  function go(i) { idx = (i + spec.steps.length) % spec.steps.length; render(true); }
+  back.onclick = () => idx > 0 && go(idx - 1);
+  next.onclick = () => go(idx === spec.steps.length - 1 ? 0 : idx + 1);
+  fig.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") { e.preventDefault(); next.click(); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); back.click(); }
+  });
+  new ResizeObserver(() => drawWires(false)).observe(stage);
+  render(false);
+}
+})();
+</script>
+</body>
+</html>

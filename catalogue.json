@@ -1,0 +1,44 @@
+[
+  {
+    "id": "screenshot-tool",
+    "title": "Show AI your screen in one keystroke.",
+    "name": "Screenshot tool",
+    "description": "Two hotkeys that put a screenshot straight on your clipboard, ready to paste into any AI chat. Capture the whole display or drag a box around the part that matters.",
+    "benefit": "Stop describing what's on your screen. Show it.",
+    "tryIt": "Capture an error, paste it, and ask: \"Explain this error and the next step I should try.\"",
+    "platform": "macOS, with the free Hammerspoon app",
+    "needs": "Five minutes to install. No account, no API key. Nothing leaves your Mac.",
+    "path": "screenshot-tool",
+    "licence": "MIT",
+    "shownAt": "Founders Week, November 2026",
+    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/screenshot-tool"
+  },
+  {
+    "id": "nextkey",
+    "title": "Ask for the shortcut. Keep your hands on the keys.",
+    "name": "NextKey",
+    "description": "Press a hotkey, say what you want to do, and NextKey tells you which keys to press. It looks at your screen, so the answer fits the app you're actually in.",
+    "benefit": "Learn the shortcuts for your own tools, one real task at a time.",
+    "tryIt": "Open Excel, press Option + Command + /, and ask: \"How do I freeze the top row?\"",
+    "platform": "macOS 14 or later",
+    "needs": "Xcode command line tools to build it, and your own OpenRouter API key. Each question sends a screenshot to the AI model you choose.",
+    "path": "nextkey",
+    "licence": "MIT",
+    "shownAt": "Founders Week, November 2026",
+    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/nextkey"
+  },
+  {
+    "id": "flow-stepper",
+    "title": "Turn a process into a walkthrough people can click through.",
+    "name": "flow-stepper",
+    "description": "A Claude skill that turns a description of how something works into an animated, step-through diagram: boxes, wires, numbered captions and Back/Next buttons, in one HTML file.",
+    "benefit": "Explain a process once, in a form people can step through at their own pace.",
+    "tryIt": "Ask Claude: \"Use flow-stepper to build a walkthrough of how our deploy pipeline works.\"",
+    "platform": "Claude Code or claude.ai with code execution",
+    "needs": "Python 3. No packages, no account beyond Claude. The page it makes works offline.",
+    "path": "flow-stepper",
+    "licence": "MIT",
+    "shownAt": null,
+    "url": "https://github.com/spencergrantkyle/aishoulddothat-opensource-tools/tree/main/flow-stepper"
+  }
+]
